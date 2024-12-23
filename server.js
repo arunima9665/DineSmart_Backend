@@ -5,8 +5,8 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // URIs for the different databases
-const hotelsMongoURI = 'mongodb+srv://arunimabhatnagar9:<db_password>@cluster0.thttb.mongodb.net/hotels';
-const menuMongoURI = 'mongodb+srv://arunimabhatnagar9:<db_password>@cluster0.thttb.mongodb.net/menu';
+const hotelsMongoURI = 'mongodb+srv://arunimabhatnagar9:iaisVRff0my2V2zk@cluster0.thttb.mongodb.net/hotels';
+const menuMongoURI = 'mongodb+srv://arunimabhatnagar9:iaisVRff0my2V2zk@cluster0.thttb.mongodb.net/menu';
 
 app.use(cors());
 app.use(express.json()); // Add this to parse JSON bodies
