@@ -4,97 +4,95 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// URIs for the different databases
-const hotelsMongoURI = 'mongodb+srv://arunimabhatnagar9:iaisVRff0my2V2zk@cluster0.thttb.mongodb.net/dinesmart';
-const menuMongoURI = 'mongodb+srv://arunimabhatnagar9:iaisVRff0my2V2zk@cluster0.thttb.mongodb.net/dinesmart';
+// MongoDB URI for the dinesmart database
+const mongoURI = 'mongodb+srv://arunimabhatnagar9:iaisVRff0my2V2zk@cluster0.thttb.mongodb.net/dinesmart';
 
+// Middleware
 app.use(cors());
-app.use(express.json()); // Add this to parse JSON bodies
+app.use(express.json());
 
-// Connect to MongoDB for hotels
-const hotelsConnection = mongoose.createConnection(hotelsMongoURI, {
+// Connect to MongoDB
+mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-});
-
-// Connect to MongoDB for menu
-const menuConnection = mongoose.createConnection(menuMongoURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+})
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((err) => {
+    console.error('Error connecting to MongoDB:', err);
+    process.exit(1);
+  });
 
 // Define Schemas
 const hotelSchema = new mongoose.Schema({
   name: String,
-  location: String,
   rating: Number,
 });
 
 const menuSchema = new mongoose.Schema({
-  itemName: String,
+  name: String,
   price: Number,
-  description: String,
+  category: String,
 });
 
-// Define Models for both databases
-const Hotel = hotelsConnection.model('Hotel', hotelSchema);
-const Menu = menuConnection.model('Menu', menuSchema);
+// Define Models for the collections
+const Hotel = mongoose.model('Hotel', hotelSchema);
+const Menu = mongoose.model('Menu', menuSchema);
 
 // Endpoint to fetch all hotels
-app.get('/hotels', (req, res) => {
-  Hotel.find()
-    .then((hotels) => res.json(hotels))
-    .catch((err) => {
-      console.error(err);
-      res.status(500).send('Error fetching hotels');
-    });
+app.get('/hotels', async (req, res) => {
+  try {
+    const hotels = await Hotel.find();
+    res.json(hotels);
+  } catch (err) {
+    console.error('Error fetching hotels:', err);
+    res.status(500).send('Error fetching hotels');
+  }
 });
 
 // Endpoint to fetch a specific hotel by name
-app.get('/hotel/:name', (req, res) => {
-  Hotel.findOne({ name: req.params.name })
-    .then((hotel) => {
-      if (hotel) {
-        res.json(hotel);
-      } else {
-        res.status(404).send('Hotel not found');
-      }
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).send('Error fetching hotel');
-    });
+app.get('/hotel/:name', async (req, res) => {
+  try {
+    const hotel = await Hotel.findOne({ name: req.params.name });
+    if (hotel) {
+      res.json(hotel);
+    } else {
+      res.status(404).send('Hotel not found');
+    }
+  } catch (err) {
+    console.error('Error fetching hotel:', err);
+    res.status(500).send('Error fetching hotel');
+  }
 });
 
-// Endpoint to fetch the menu
-app.get('/menu', (req, res) => {
-  Menu.find()
-    .then((menuItems) => res.json(menuItems))
-    .catch((err) => {
-      console.error(err);
-      res.status(500).send('Error fetching menu');
-    });
+// Endpoint to fetch all menu items
+app.get('/menu', async (req, res) => {
+  try {
+    const menuItems = await Menu.find();
+    res.json(menuItems);
+  } catch (err) {
+    console.error('Error fetching menu:', err);
+    res.status(500).send('Error fetching menu');
+  }
 });
 
 // Endpoint to fetch a specific menu item by name
-app.get('/menu/:itemName', (req, res) => {
-  Menu.findOne({ itemName: req.params.itemName })
-    .then((menuItem) => {
-      if (menuItem) {
-        res.json(menuItem);
-      } else {
-        res.status(404).send('Menu item not found');
-      }
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).send('Error fetching menu item');
-    });
+app.get('/menu/:name', async (req, res) => {
+  try {
+    const menuItem = await Menu.findOne({ name: req.params.name });
+    if (menuItem) {
+      res.json(menuItem);
+    } else {
+      res.status(404).send('Menu item not found');
+    }
+  } catch (err) {
+    console.error('Error fetching menu item:', err);
+    res.status(500).send('Error fetching menu item');
+  }
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Internal Server Error:', err.stack);
   res.status(500).send('Internal Server Error');
 });
 
